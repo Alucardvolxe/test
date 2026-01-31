@@ -4,11 +4,7 @@ import matplotlib.pyplot as plt
 
 
 
-image = np.array([
-    [50, 80, 120],
-    [90, 150, 200],
-    [130, 180, 230]
-])
+
 scale_matrix = np.array([
     [2, 0],
     [0, 2]

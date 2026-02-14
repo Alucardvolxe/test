@@ -1,53 +1,69 @@
 import numpy as np
-from scipy.linalg import lu
 
-# Define matrix A
-A = np.array([
-    [2, -1, 1],
-    [3, 3, 9],
-    [3, 3, 5]
-], dtype=float)
+# Step 1: Construct integer L (lower triangular) and U (upper triangular)
+L = np.array([
+    [1, 0, 0, 0],
+    [2, 1, 0, 0],
+    [1, 3, 1, 0],
+    [4, 2, 1, 1]
+])
 
-# Define vector b
-b = np.array([2, -1, 4], dtype=float)
+U = np.array([
+    [3, 5, 2, 4],
+    [0, 2, 3, 1],
+    [0, 0, 1, 2],
+    [0, 0, 0, 3]
+])
 
-print("Matrix A:")
+# Step 2: Compute integer coefficient matrix A
+A = L @ U
+
+# Step 3: Choose integer solution vector
+x_true = np.array([1, 2, 1, 1])
+
+# Step 4: Compute RHS
+b = A @ x_true
+
+print("Coefficient matrix A:")
 print(A)
-
-print("\nVector b:")
+print("\nRight-hand side b:")
 print(b)
 
-# Perform LU Decomposition (PA = LU)
-P, L, U = lu(A)
+# Step 5: Doolittle LU decomposition manually
+n = A.shape[0]
+L_calc = np.eye(n, dtype=int)
+U_calc = np.zeros((n, n), dtype=int)
 
-print("\nPermutation Matrix P:")
-print(P)
+for i in range(n):
+    # Compute U row
+    for j in range(i, n):
+        sum_ = sum(L_calc[i,k]*U_calc[k,j] for k in range(i))
+        U_calc[i,j] = A[i,j] - sum_
+    # Compute L column
+    for j in range(i+1, n):
+        sum_ = sum(L_calc[j,k]*U_calc[k,i] for k in range(i))
+        L_calc[j,i] = (A[j,i] - sum_) // U_calc[i,i]  # integer division
 
 print("\nLower Triangular Matrix L:")
-print(L)
+print(L_calc)
 
 print("\nUpper Triangular Matrix U:")
-print(U)
+print(U_calc)
 
-# Verify PA = LU
-print("\nVerification: PA")
-print(np.dot(P, A))
+# Step 6: Solve Ly = b
+y = np.zeros(n, dtype=int)
+for i in range(n):
+    y[i] = b[i] - sum(L_calc[i,k]*y[k] for k in range(i))
 
-print("\nVerification: LU")
-print(np.dot(L, U))
-
-# Solve Ax = b using LU
-
-# Step 1: Solve Ly = Pb
-Pb = np.dot(P, b)
-y = np.linalg.solve(L, Pb)
-
-# Step 2: Solve Ux = y
-x = np.linalg.solve(U, y)
+# Step 7: Solve Ux = y
+x_solved = np.zeros(n, dtype=int)
+for i in reversed(range(n)):
+    x_solved[i] = (y[i] - sum(U_calc[i,k]*x_solved[k] for k in range(i+1, n))) // U_calc[i,i]
 
 print("\nSolution vector x:")
-print(x)
+print(x_solved)
 
-# Final verification Ax = b
-print("\nVerification Ax:")
-print(np.dot(A, x))
+# Step 8: Verify Ax = b
+Ax = A @ x_solved
+print("\nVerification Ax = b:")
+print(Ax)

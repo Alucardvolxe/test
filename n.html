@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pharmacy ER Diagram</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        display: ['Syne', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { background: #080b14; }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .glow-blue { filter: drop-shadow(0 0 6px rgba(56,189,248,0.5)); }
+  .glow-amber { filter: drop-shadow(0 0 6px rgba(251,191,36,0.5)); }
+  .glow-green { filter: drop-shadow(0 0 4px rgba(52,211,153,0.4)); }
+  .glow-red   { filter: drop-shadow(0 0 4px rgba(248,113,113,0.4)); }
+
+  @keyframes fadein { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .fadein { animation: fadein 0.6s ease forwards; }
+  .fadein-1 { animation-delay: 0.1s; opacity:0; }
+  .fadein-2 { animation-delay: 0.25s; opacity:0; }
+  .fadein-3 { animation-delay: 0.4s; opacity:0; }
+</style>
+</head>
+<body class="grid-bg min-h-screen p-6">
+
+<!-- Header -->
+<div class="text-center mb-6 fadein fadein-1">
+  <h1 class="font-display text-3xl font-extrabold tracking-widest text-sky-400 uppercase">Prescriptions-R-X</h1>
+  <p class="font-mono text-xs text-slate-500 mt-1 tracking-widest">Entity – Relationship Diagram · Basic ER Model</p>
+</div>
+
+<!-- Legend -->
+<div class="flex flex-wrap justify-center gap-6 mb-6 fadein fadein-2">
+  <div class="flex items-center gap-2 font-mono text-xs text-slate-400">
+    <div class="w-8 h-5 border-2 border-sky-400 bg-sky-400/10 rounded-sm"></div> Entity
+  </div>
+  <div class="flex items-center gap-2 font-mono text-xs text-slate-400">
+    <div class="w-5 h-5 border-2 border-amber-400 bg-amber-400/10 rotate-45"></div> Relationship
+  </div>
+  <div class="flex items-center gap-2 font-mono text-xs text-slate-400">
+    <div class="w-7 h-5 border-2 border-emerald-400 bg-emerald-400/10 rounded-full"></div> Attribute
+  </div>
+  <div class="flex items-center gap-2 font-mono text-xs text-slate-400">
+    <div class="w-8 h-5 border-2 border-red-400 bg-red-400/10 rounded-sm border-dashed"></div> Weak Entity
+  </div>
+  <div class="flex items-center gap-2 font-mono text-xs text-slate-400">
+    <div class="flex gap-0.5"><div class="w-4 h-0.5 bg-sky-400 mt-2.5"></div><div class="w-4 h-0.5 bg-sky-400 mt-1.5"></div></div> Total Participation
+  </div>
+  <div class="flex items-center gap-2 font-mono text-xs text-slate-400">
+    <div class="w-8 h-0.5 bg-slate-500 mt-2.5"></div> Partial Participation
+  </div>
+</div>
+
+<!-- SVG Canvas -->
+<div class="fadein fadein-3 overflow-auto">
+<svg id="er" width="1300" height="980" viewBox="0 0 1300 980" style="display:block;margin:0 auto;max-width:100%;">
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- ═══════════════════════════════════════════
+       NODES — drawn via JS after SVG is parsed
+       Each node has: id, cx, cy, type, label, sublabel
+       Types: entity | weak | rel | attr | attr-key
+  ═══════════════════════════════════════════ -->
+
+  <!-- All elements rendered by JS below -->
+</svg>
+</div>
+
+<!-- Notation guide -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6 max-w-4xl mx-auto fadein fadein-3">
+  <div class="bg-slate-900/70 border border-slate-700 rounded-lg p-3">
+    <p class="font-mono text-xs font-bold text-sky-400 mb-1">PARTICIPATION</p>
+    <p class="font-mono text-xs text-slate-400">Double line = Total (mandatory)</p>
+    <p class="font-mono text-xs text-slate-400">Single line = Partial (optional)</p>
+  </div>
+  <div class="bg-slate-900/70 border border-slate-700 rounded-lg p-3">
+    <p class="font-mono text-xs font-bold text-amber-400 mb-1">CARDINALITY</p>
+    <p class="font-mono text-xs text-slate-400">1 = exactly one side</p>
+    <p class="font-mono text-xs text-slate-400">N / M / P = many sides</p>
+  </div>
+  <div class="bg-slate-900/70 border border-slate-700 rounded-lg p-3">
+    <p class="font-mono text-xs font-bold text-red-400 mb-1">WEAK ENTITY</p>
+    <p class="font-mono text-xs text-slate-400">DRUG depends on PHARMA CO for identity. Partial key = Trade Name.</p>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  DATA MODEL
+// ─────────────────────────────────────────────
+const NODES = [
+  // ── Entities ──
+  { id:'patient',   cx:200,  cy:200,  type:'entity', label:'PATIENT' },
+  { id:'doctor',    cx:780,  cy:200,  type:'entity', label:'DOCTOR' },
+  { id:'pharmco',   cx:1100, cy:200,  type:'entity', label:'PHARMACEUTICAL\nCOMPANY' },
+  { id:'pharmacy',  cx:130,  cy:600,  type:'entity', label:'PHARMACY' },
+  { id:'drug',      cx:780,  cy:600,  type:'weak',   label:'DRUG', sublabel:'(weak entity)' },
+
+  // ── Relationships ──
+  { id:'has',        cx:490,  cy:200,  type:'rel', label:'HAS', sublabel:'primary' },
+  { id:'prescribes', cx:490,  cy:440,  type:'rel', label:'PRESCRIBES' },
+  { id:'makes',      cx:940,  cy:440,  type:'rel', label:'MAKES' },
+  { id:'sells',      cx:450,  cy:700,  type:'rel', label:'SELLS' },
+  { id:'contracts',  cx:700,  cy:830,  type:'rel', label:'CONTRACTS\nWITH' },
+
+  // ── Patient attributes ──
+  { id:'p-ssn',     cx:60,   cy:80,   type:'attr-key', label:'SSN' },
+  { id:'p-name',    cx:160,  cy:60,   type:'attr',     label:'Name' },
+  { id:'p-addr',    cx:265,  cy:60,   type:'attr',     label:'Address' },
+  { id:'p-age',     cx:355,  cy:80,   type:'attr',     label:'Age' },
+
+  // ── Doctor attributes ──
+  { id:'d-ssn',     cx:660,  cy:70,   type:'attr-key', label:'SSN' },
+  { id:'d-name',    cx:760,  cy:55,   type:'attr',     label:'Name' },
+  { id:'d-spec',    cx:870,  cy:65,   type:'attr',     label:'Specialty' },
+  { id:'d-exp',     cx:970,  cy:90,   type:'attr',     label:'Yrs Exp' },
+
+  // ── PharmCo attributes ──
+  { id:'c-name',    cx:1010, cy:70,   type:'attr-key', label:'Name' },
+  { id:'c-phone',   cx:1160, cy:80,   type:'attr',     label:'Phone' },
+
+  // ── Pharmacy attributes ──
+  { id:'ph-name',   cx:40,   cy:490,  type:'attr-key', label:'Name' },
+  { id:'ph-addr',   cx:40,   cy:580,  type:'attr',     label:'Address' },
+  { id:'ph-phone',  cx:40,   cy:670,  type:'attr',     label:'Phone' },
+
+  // ── Drug attributes ──
+  { id:'dr-tname',  cx:650,  cy:730,  type:'attr-key', label:'Trade Name', sublabel:'partial key' },
+  { id:'dr-form',   cx:920,  cy:730,  type:'attr',     label:'Formula' },
+
+  // ── Prescribes attributes ──
+  { id:'pr-date',   cx:340,  cy:530,  type:'attr',     label:'Date' },
+  { id:'pr-qty',    cx:340,  cy:610,  type:'attr',     label:'Quantity' },
+
+  // ── Sells attribute ──
+  { id:'s-price',   cx:370,  cy:820,  type:'attr',     label:'Price' },
+
+  // ── Contracts attributes ──
+  { id:'ct-start',  cx:520,  cy:930,  type:'attr',     label:'Start Date' },
+  { id:'ct-end',    cx:700,  cy:940,  type:'attr',     label:'End Date' },
+  { id:'ct-text',   cx:880,  cy:930,  type:'attr',     label:'Contract Text' },
+  { id:'ct-sup',    cx:900,  cy:820,  type:'attr',     label:'Supervisor' },
+];
+
+// Edges: { from, to, card:'1'|'N'|'M'|'P', total:bool, cardSide:'from'|'to' }
+// cardSide = which end to place the cardinality label
+const EDGES = [
+  // HAS relationship
+  { from:'patient',   to:'has',        card:'N', total:true,  cardSide:'from' },
+  { from:'doctor',    to:'has',        card:'1', total:true,  cardSide:'from' },
+
+  // PRESCRIBES (ternary)
+  { from:'doctor',    to:'prescribes', card:'N', total:false, cardSide:'from' },
+  { from:'patient',   to:'prescribes', card:'M', total:false, cardSide:'from' },
+  { from:'drug',      to:'prescribes', card:'P', total:false, cardSide:'from' },
+
+  // MAKES
+  { from:'pharmco',   to:'makes',      card:'1', total:false, cardSide:'from' },
+  { from:'drug',      to:'makes',      card:'N', total:true,  cardSide:'from' },
+
+  // SELLS
+  { from:'pharmacy',  to:'sells',      card:'M', total:true,  cardSide:'from' },
+  { from:'drug',      to:'sells',      card:'N', total:false, cardSide:'from' },
+
+  // CONTRACTS WITH
+  { from:'pharmacy',  to:'contracts',  card:'M', total:false, cardSide:'from' },
+  { from:'pharmco',   to:'contracts',  card:'N', total:false, cardSide:'from' },
+
+  // Attribute edges (no card)
+  { from:'patient',   to:'p-ssn',   attr:true },
+  { from:'patient',   to:'p-name',  attr:true },
+  { from:'patient',   to:'p-addr',  attr:true },
+  { from:'patient',   to:'p-age',   attr:true },
+
+  { from:'doctor',    to:'d-ssn',   attr:true },
+  { from:'doctor',    to:'d-name',  attr:true },
+  { from:'doctor',    to:'d-spec',  attr:true },
+  { from:'doctor',    to:'d-exp',   attr:true },
+
+  { from:'pharmco',   to:'c-name',  attr:true },
+  { from:'pharmco',   to:'c-phone', attr:true },
+
+  { from:'pharmacy',  to:'ph-name',  attr:true },
+  { from:'pharmacy',  to:'ph-addr',  attr:true },
+  { from:'pharmacy',  to:'ph-phone', attr:true },
+
+  { from:'drug',      to:'dr-tname', attr:true },
+  { from:'drug',      to:'dr-form',  attr:true },
+
+  { from:'prescribes',to:'pr-date',  attr:true },
+  { from:'prescribes',to:'pr-qty',   attr:true },
+
+  { from:'sells',     to:'s-price',  attr:true },
+
+  { from:'contracts', to:'ct-start', attr:true },
+  { from:'contracts', to:'ct-end',   attr:true },
+  { from:'contracts', to:'ct-text',  attr:true },
+  { from:'contracts', to:'ct-sup',   attr:true },
+];
+
+// ─────────────────────────────────────────────
+//  DIMENSIONS
+// ─────────────────────────────────────────────
+const ENTITY_W = 160, ENTITY_H = 52;
+const REL_W    = 90,  REL_H   = 44; // half-diagonals
+const ATTR_RX  = 52,  ATTR_RY = 20;
+
+function nodeBox(n) {
+  if (n.type === 'entity' || n.type === 'weak')
+    return { x: n.cx - ENTITY_W/2, y: n.cy - ENTITY_H/2, w: ENTITY_W, h: ENTITY_H };
+  if (n.type === 'rel')
+    return { x: n.cx - REL_W, y: n.cy - REL_H, w: REL_W*2, h: REL_H*2 };
+  return { x: n.cx - ATTR_RX, y: n.cy - ATTR_RY, w: ATTR_RX*2, h: ATTR_RY*2 };
+}
+
+// Edge attachment: find point on border of node closest to other node
+function edgePoint(n, toward) {
+  const dx = toward.cx - n.cx;
+  const dy = toward.cy - n.cy;
+  const angle = Math.atan2(dy, dx);
+
+  if (n.type === 'rel') {
+    // Diamond: |dx|/REL_W + |dy|/REL_H = 1
+    const t = 1 / (Math.abs(Math.cos(angle))/REL_W + Math.abs(Math.sin(angle))/REL_H);
+    return { x: n.cx + Math.cos(angle)*t, y: n.cy + Math.sin(angle)*t };
+  }
+  if (n.type === 'entity' || n.type === 'weak') {
+    const hw = ENTITY_W/2, hh = ENTITY_H/2;
+    const t = Math.min(hw/Math.abs(dx||0.001), hh/Math.abs(dy||0.001));
+    return { x: n.cx + dx*t, y: n.cy + dy*t };
+  }
+  // attr: ellipse
+  const t = 1 / Math.sqrt((Math.cos(angle)/ATTR_RX)**2 + (Math.sin(angle)/ATTR_RY)**2);
+  return { x: n.cx + Math.cos(angle)*t, y: n.cy + Math.sin(angle)*t };
+}
+
+// ─────────────────────────────────────────────
+//  RENDER
+// ─────────────────────────────────────────────
+const svg = document.getElementById('er');
+const nodeMap = {};
+NODES.forEach(n => nodeMap[n.id] = n);
+
+// 1. Draw edges first (behind nodes)
+const edgeGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
+svg.appendChild(edgeGroup);
+
+EDGES.forEach(e => {
+  const a = nodeMap[e.from], b = nodeMap[e.to];
+  const p1 = edgePoint(a, b);
+  const p2 = edgePoint(b, a);
+
+  const isAttr = !!e.attr;
+  const isTotal = !!e.total;
+
+  const drawLine = (ox, oy) => {
+    const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1', p1.x + ox); l.setAttribute('y1', p1.y + oy);
+    l.setAttribute('x2', p2.x + ox); l.setAttribute('y2', p2.y + oy);
+    l.setAttribute('stroke', isAttr ? '#334155' : isTotal ? '#38bdf8' : '#475569');
+    l.setAttribute('stroke-width', isAttr ? '1.2' : '2');
+    if (isAttr) l.setAttribute('stroke-dasharray', '0');
+    edgeGroup.appendChild(l);
+  };
+
+  drawLine(0, 0);
+
+  if (isTotal) {
+    // draw parallel offset lines
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.sqrt(dx*dx+dy*dy);
+    const nx = -dy/len * 3, ny = dx/len * 3;
+    drawLine(nx, ny);
+    drawLine(-nx, -ny);
+  }
+
+  // Cardinality label
+  if (e.card) {
+    const mx = p1.x + (p2.x - p1.x) * 0.18;
+    const my = p1.y + (p2.y - p1.y) * 0.18;
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.sqrt(dx*dx+dy*dy);
+    const offX = -dy/len * 14, offY = dx/len * 14;
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', mx + offX);
+    t.setAttribute('y', my + offY);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family','JetBrains Mono, monospace');
+    t.setAttribute('font-size','13');
+    t.setAttribute('font-weight','700');
+    t.setAttribute('fill','#fb923c');
+    t.textContent = e.card;
+    edgeGroup.appendChild(t);
+  }
+});
+
+// 2. Draw nodes on top
+const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
+svg.appendChild(nodeGroup);
+
+NODES.forEach(n => {
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+  if (n.type === 'entity' || n.type === 'weak') {
+    const isWeak = n.type === 'weak';
+    const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x', n.cx - ENTITY_W/2);
+    r.setAttribute('y', n.cy - ENTITY_H/2);
+    r.setAttribute('width', ENTITY_W);
+    r.setAttribute('height', ENTITY_H);
+    r.setAttribute('rx', '5');
+    r.setAttribute('fill', isWeak ? 'rgba(248,113,113,0.07)' : 'rgba(56,189,248,0.08)');
+    r.setAttribute('stroke', isWeak ? '#f87171' : '#38bdf8');
+    r.setAttribute('stroke-width', '2');
+    if (isWeak) r.setAttribute('stroke-dasharray','6,3');
+    g.appendChild(r);
+
+    if (isWeak) {
+      const r2 = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r2.setAttribute('x', n.cx - ENTITY_W/2 + 4);
+      r2.setAttribute('y', n.cy - ENTITY_H/2 + 4);
+      r2.setAttribute('width', ENTITY_W - 8);
+      r2.setAttribute('height', ENTITY_H - 8);
+      r2.setAttribute('rx', '3');
+      r2.setAttribute('fill','none');
+      r2.setAttribute('stroke','#f87171');
+      r2.setAttribute('stroke-width','1');
+      r2.setAttribute('stroke-dasharray','4,3');
+      r2.setAttribute('opacity','0.4');
+      g.appendChild(r2);
+    }
+
+    const lines = n.label.split('\n');
+    const totalH = lines.length * 15;
+    lines.forEach((line, i) => {
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', n.cx);
+      t.setAttribute('y', n.cy - totalH/2 + i*15 + (n.sublabel ? -5 : 7));
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-family','Syne, sans-serif');
+      t.setAttribute('font-size','12');
+      t.setAttribute('font-weight','700');
+      t.setAttribute('fill', isWeak ? '#fca5a5' : '#e0f2fe');
+      t.textContent = line;
+      g.appendChild(t);
+    });
+
+    if (n.sublabel) {
+      const s = document.createElementNS('http://www.w3.org/2000/svg','text');
+      s.setAttribute('x', n.cx);
+      s.setAttribute('y', n.cy + 18);
+      s.setAttribute('text-anchor','middle');
+      s.setAttribute('font-family','JetBrains Mono, monospace');
+      s.setAttribute('font-size','8');
+      s.setAttribute('fill','#f87171');
+      s.textContent = n.sublabel;
+      g.appendChild(s);
+    }
+  }
+
+  else if (n.type === 'rel') {
+    const diamond = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    const pts = `${n.cx},${n.cy-REL_H} ${n.cx+REL_W},${n.cy} ${n.cx},${n.cy+REL_H} ${n.cx-REL_W},${n.cy}`;
+    diamond.setAttribute('points', pts);
+    diamond.setAttribute('fill','rgba(251,191,36,0.09)');
+    diamond.setAttribute('stroke','#fbbf24');
+    diamond.setAttribute('stroke-width','2');
+    g.appendChild(diamond);
+
+    const lines = n.label.split('\n');
+    lines.forEach((line, i) => {
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', n.cx);
+      t.setAttribute('y', n.cy + (i - (lines.length-1)/2)*14 + (n.sublabel ? -6 : 0));
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('dominant-baseline','middle');
+      t.setAttribute('font-family','Syne, sans-serif');
+      t.setAttribute('font-size','10');
+      t.setAttribute('font-weight','700');
+      t.setAttribute('fill','#fef3c7');
+      t.textContent = line;
+      g.appendChild(t);
+    });
+
+    if (n.sublabel) {
+      const s = document.createElementNS('http://www.w3.org/2000/svg','text');
+      s.setAttribute('x', n.cx);
+      s.setAttribute('y', n.cy + (n.label.split('\n').length)*8 + 2);
+      s.setAttribute('text-anchor','middle');
+      s.setAttribute('font-family','JetBrains Mono, monospace');
+      s.setAttribute('font-size','8');
+      s.setAttribute('fill','#a78bfa');
+      s.textContent = `(${n.sublabel})`;
+      g.appendChild(s);
+    }
+  }
+
+  else {
+    // Attribute
+    const isKey = n.type === 'attr-key';
+    const ellipse = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    ellipse.setAttribute('cx', n.cx);
+    ellipse.setAttribute('cy', n.cy);
+    ellipse.setAttribute('rx', ATTR_RX);
+    ellipse.setAttribute('ry', ATTR_RY);
+    ellipse.setAttribute('fill','rgba(52,211,153,0.06)');
+    ellipse.setAttribute('stroke','#34d399');
+    ellipse.setAttribute('stroke-width','1.5');
+    g.appendChild(ellipse);
+
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', n.cx);
+    t.setAttribute('y', n.cy - (n.sublabel ? 5 : 1));
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family','JetBrains Mono, monospace');
+    t.setAttribute('font-size','10');
+    t.setAttribute('fill','#6ee7b7');
+    if (isKey) t.setAttribute('text-decoration','underline');
+    t.textContent = n.label;
+    g.appendChild(t);
+
+    if (n.sublabel) {
+      const s = document.createElementNS('http://www.w3.org/2000/svg','text');
+      s.setAttribute('x', n.cx);
+      s.setAttribute('y', n.cy + 11);
+      s.setAttribute('text-anchor','middle');
+      s.setAttribute('dominant-baseline','middle');
+      s.setAttribute('font-family','JetBrains Mono, monospace');
+      s.setAttribute('font-size','7.5');
+      s.setAttribute('fill','#f87171');
+      s.textContent = n.sublabel;
+      g.appendChild(s);
+    }
+  }
+
+  nodeGroup.appendChild(g);
+});
+</script>
+</body>
+</html>

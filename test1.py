@@ -3,8 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-
-
 scale_matrix = np.array([
     [2, 0],
     [0, 2]

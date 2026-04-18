@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-
 image = np.array([
     [50, 80, 120],
     [90, 150, 200],

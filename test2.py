@@ -49,7 +49,6 @@ print(L_calc)
 
 print("\nUpper Triangular Matrix U:")
 print(U_calc)
-
 # Step 6: Solve Ly = b
 y = np.zeros(n, dtype=int)
 for i in range(n):

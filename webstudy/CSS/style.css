@@ -4,6 +4,7 @@ body {
 
 p {
   color: rgb(120, 12, 225);
+  border: 3px solid orange;
 }
 
 

@@ -1,0 +1,99 @@
+* {
+            box-sizing: border-box;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        }
+ 
+        body {
+            margin: 0px;
+        }
+ 
+        header {
+            background-color: #F4CABA;
+            color: white;
+            text-shadow: 2px 2px 5px black;
+            text-align: center;
+            padding: 5px;
+        }
+ 
+        .navbar {
+            background-color: beige;
+            height: 35px;
+            margin-top: 3px;
+        }
+ 
+ 
+        main {
+            display: flex;
+            flex-wrap: wrap;
+        }
+ 
+        aside {
+            width: 20%;
+            padding: 10px;
+            background-color: #DABBB3;
+            color: #FDEAE3;
+            text-shadow: 2px 2px 5px #a3503b;
+            min-height: 370px;
+        }
+ 
+        section {
+            width: 40%;
+            padding: 10px;
+            background-color: #F4CABA;
+            color: #FDEAE3;
+            text-shadow: 2px 2px 5px #a3503b;
+            min-height: 370px;
+        }
+ 
+        article {
+            width: 40%;
+            padding: 10px;
+            background-color: #FCD8CD;
+            color: #FDEAE3;
+            text-shadow: 2px 2px 5px #a3503b;
+            min-height: 370px;
+        }
+ 
+        footer {
+            display: block;
+            background-color: #D69F91;
+            padding: 10px;
+            text-align: center;
+            font-size: 3em;
+            color: #FDEAE3;
+            text-shadow: 2px 2px 5px #a3503b;
+        }
+ 
+        /* Tablet: aside full width on top, section + article side by side */
+        @media (max-width: 900px) {
+            aside {
+                width: 100%;
+                min-height: auto;
+            }
+ 
+            section {
+                width: 50%;
+            }
+ 
+            article {
+                width: 50%;
+            }
+ 
+            footer {
+                font-size: 2em;
+            }
+        }
+ 
+        /* Mobile: all blocks stack full width */
+        @media (max-width: 580px) {
+            aside,
+            section,
+            article {
+                width: 100%;
+                min-height: auto;
+            }
+ 
+            footer {
+                font-size: 1.5em;
+            }
+        }

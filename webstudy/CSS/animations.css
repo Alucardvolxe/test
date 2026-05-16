@@ -1,0 +1,43 @@
+#box1{
+    height: 50px;
+    width: 250px;
+    border: none;
+    font-size: 2em;
+    text-align: center;
+    background-color: rgb(142, 35, 35);
+    
+}
+#box1:hover + #box2{
+     animation: slideup 2s;
+     cursor: pointer;
+     display: block;
+}
+#box2:hover{
+    display: block;
+    animation: rotate 3s;
+
+}
+#box2{
+    height: 250px;
+    width: 250px;
+    border-radius: 250px;
+    border: none;
+    font-size: 13em;
+    text-align: center;
+    background-color: olivedrab;
+    display: none;
+    box-shadow: 2px 3px 5px black;
+   
+}
+
+@keyframes slideleft{
+    from{transform: translateX(100%);}
+}
+
+@keyframes slideup{
+    from{transform: translatey(100%);}
+}
+
+@keyframes rotate{
+    75%{transform: rotateY(360deg);}
+}

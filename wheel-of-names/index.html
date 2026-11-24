@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d111c" />
+  <meta name="description" content="Spinora is a polished wheel of names. Add names, spin the wheel, and pick a random winner." />
+  <title>Spinora — Wheel of Names</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%238b5cf6'/%3E%3Cpath d='M16 2a14 14 0 0 1 12.1 7H16z' fill='%2322d3ee'/%3E%3Cpath d='M28.1 9A14 14 0 0 1 16 30v-14z' fill='%23f472b6'/%3E%3Ccircle cx='16' cy='16' r='3.5' fill='%23fff'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#stage">Skip to the wheel</a>
+
+  <div class="backdrop" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
+    <span class="grain"></span>
+  </div>
+
+  <header class="app-header">
+    <a class="brand" href="#" aria-label="Spinora home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="26" height="26" role="presentation">
+          <circle cx="16" cy="16" r="14" fill="#8b5cf6"></circle>
+          <path d="M16 2a14 14 0 0 1 12.1 7H16z" fill="#22d3ee"></path>
+          <path d="M28.1 9A14 14 0 0 1 16 30v-14z" fill="#f472b6"></path>
+          <path d="M16 30A14 14 0 0 1 3.9 9H16z" fill="#facc15"></path>
+          <circle cx="16" cy="16" r="3.4" fill="#0d111c" stroke="#fff" stroke-width="1.4"></circle>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">Spinora</span>
+        <span class="brand-sub">Wheel of Names</span>
+      </span>
+    </a>
+
+    <div class="header-meta">
+      <span class="pill" id="entryPill" aria-live="polite">8 entries</span>
+      <span class="pill pill-muted" id="spinCounterPill">0 spins</span>
+    </div>
+  </header>
+
+  <main class="layout" id="main">
+    <!-- ============ NAMES PANEL ============ -->
+    <aside class="panel panel-names" id="namesPanel" aria-labelledby="namesTitle">
+      <div class="panel-head">
+        <h2 class="panel-title" id="namesTitle">Entries</h2>
+        <button type="button" class="btn btn-ghost btn-sm" id="clearNames">Clear all</button>
+      </div>
+
+      <form class="add-form" id="addForm" autocomplete="off">
+        <label class="sr-only" for="nameInput">Add names, one per line</label>
+        <textarea
+          id="nameInput"
+          class="name-input-add"
+          rows="2"
+          maxlength="600"
+          placeholder="Type a name…&#10;Add several on separate lines"
+          spellcheck="false"
+        ></textarea>
+        <div class="add-row">
+          <p class="hint">Ctrl + Enter to add</p>
+          <button type="submit" class="btn btn-primary btn-add" id="addBtn">Add names</button>
+        </div>
+      </form>
+
+      <div class="names-meta">
+        <span id="namesCount" class="count-label" aria-live="polite">8 entries</span>
+        <span class="hint">Duplicates allowed</span>
+      </div>
+
+      <ul class="names-list" id="namesList" aria-label="Wheel entries"></ul>
+    </aside>
+
+    <!-- ============ WHEEL STAGE ============ -->
+    <section class="stage" id="stage" aria-labelledby="stageTitle">
+      <h2 class="sr-only" id="stageTitle">Spinning wheel</h2>
+
+      <div class="wheel-area">
+        <div class="wheel-halo" aria-hidden="true"></div>
+        <div class="pointer" aria-hidden="true">
+          <span class="pointer-pin"></span>
+          <span class="pointer-tip"></span>
+        </div>
+        <div class="wheel-wrap" id="wheelWrap">
+          <canvas id="wheel" role="img" aria-label="Colorful spinning wheel with the current entries"></canvas>
+        </div>
+        <div class="wheel-center-aura" aria-hidden="true"></div>
+      </div>
+
+      <div class="stage-controls">
+        <button type="button" class="spin-btn" id="spinBtn" aria-describedby="spinHint">
+          <span class="spin-btn-label" id="spinBtnLabel">SPIN</span>
+          <span class="spin-btn-shine" aria-hidden="true"></span>
+        </button>
+        <p class="spin-hint" id="spinHint">Press spin to pick a random winner.</p>
+      </div>
+
+      <div class="last-winner" id="lastWinner" hidden>
+        <span class="last-winner-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"></path>
+            <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"></path>
+          </svg>
+        </span>
+        <span class="last-winner-text">Last winner</span>
+        <strong class="last-winner-name" id="lastWinnerName"></strong>
+      </div>
+    </section>
+
+    <!-- ============ SIDE: HISTORY + SETTINGS ============ -->
+    <aside class="side-col">
+      <section class="panel panel-history" id="historyPanel" aria-labelledby="historyTitle">
+        <div class="panel-head">
+          <h2 class="panel-title" id="historyTitle">History</h2>
+          <button type="button" class="btn btn-ghost btn-sm" id="clearHistory">Clear</button>
+        </div>
+        <p class="panel-sub" id="historySub" aria-live="polite">No spins yet</p>
+        <ol class="history-list" id="historyList" aria-label="Spin history"></ol>
+      </section>
+
+      <section class="panel panel-settings" id="settingsPanel" aria-labelledby="settingsTitle">
+        <div class="panel-head">
+          <h2 class="panel-title" id="settingsTitle">Customize</h2>
+        </div>
+
+        <div class="setting">
+          <label class="setting-label" for="schemeSelect">Color scheme</label>
+          <div class="select-wrap">
+            <select id="schemeSelect" class="select">
+              <option value="vibrant">Vibrant</option>
+              <option value="pastel">Pastel</option>
+              <option value="ocean">Ocean</option>
+              <option value="sunset">Sunset</option>
+              <option value="forest">Forest</option>
+              <option value="candy">Candy</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting setting-inline">
+          <label class="setting-label" for="bgColor">Wheel background</label>
+          <div class="color-control">
+            <input type="color" id="bgColor" class="color-input" value="#141a28" aria-label="Wheel background color" />
+            <span class="color-value" id="bgColorValue">#141a28</span>
+          </div>
+        </div>
+
+        <div class="setting">
+          <div class="setting-row">
+            <label class="setting-label" for="durationRange">Spin duration</label>
+            <output class="setting-value" id="durationValue" for="durationRange">5.0s</output>
+          </div>
+          <input type="range" id="durationRange" class="range" min="2" max="10" step="0.5" value="5" />
+        </div>
+
+        <div class="setting">
+          <label class="toggle-row" for="soundToggle">
+            <span class="toggle-text">
+              <span class="setting-label">Sound effects</span>
+              <span class="setting-desc">Ticks and winner fanfare</span>
+            </span>
+            <span class="switch">
+              <input type="checkbox" id="soundToggle" checked />
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            </span>
+          </label>
+        </div>
+
+        <div class="setting">
+          <label class="toggle-row" for="confettiToggle">
+            <span class="toggle-text">
+              <span class="setting-label">Confetti</span>
+              <span class="setting-desc">Celebrate each winner</span>
+            </span>
+            <span class="switch">
+              <input type="checkbox" id="confettiToggle" checked />
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            </span>
+          </label>
+        </div>
+
+        <div class="setting">
+          <label class="toggle-row" for="autoRemoveToggle">
+            <span class="toggle-text">
+              <span class="setting-label">Auto-remove winners</span>
+              <span class="setting-desc">Take winners off the wheel</span>
+            </span>
+            <span class="switch">
+              <input type="checkbox" id="autoRemoveToggle" />
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            </span>
+          </label>
+        </div>
+
+        <button type="button" class="btn btn-danger btn-block" id="resetBtn">Reset app</button>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="app-footer">
+    <p>Spinora · a wheel of names built with vanilla JS. Your data stays in this browser.</p>
+  </footer>
+
+  <!-- ============ WINNER MODAL ============ -->
+  <div class="modal-backdrop" id="winnerModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="winnerTitle" aria-describedby="winnerNote">
+      <div class="modal-burst" aria-hidden="true">
+        <svg viewBox="0 0 120 120" width="84" height="84">
+          <g fill="none" stroke-linecap="round">
+            <circle cx="60" cy="60" r="34" stroke="url(#g1)" stroke-width="6" opacity="0.9"></circle>
+            <path d="M60 14v10M60 96v10M14 60h10M96 60h10M27 27l7 7M86 86l7 7M93 27l-7 7M34 86l-7 7" stroke="url(#g2)" stroke-width="5"></path>
+          </g>
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#8b5cf6"></stop>
+              <stop offset="1" stop-color="#22d3ee"></stop>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f472b6"></stop>
+              <stop offset="1" stop-color="#facc15"></stop>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <p class="modal-eyebrow" id="winnerSpin">Spin #1</p>
+      <h2 class="winner-name" id="winnerTitle" aria-live="assertive">Winner</h2>
+      <p class="winner-note" id="winnerNote"></p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary btn-lg" id="spinAgainBtn">Spin again</button>
+        <button type="button" class="btn btn-ghost" id="removeWinnerBtn">Remove winner</button>
+        <button type="button" class="btn btn-ghost" id="keepWinnerBtn">Keep winner</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/names.js"></script>
+  <script src="js/wheel.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

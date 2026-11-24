@@ -556,7 +556,8 @@
     const pointerIndex = getPointerIndex();
     if (pointerIndex !== state.lastTickIndex) {
       state.lastTickIndex = pointerIndex;
-      if (now - state.lastTickTime > 30) {
+      // Ticks only as the wheel slows down, so the spin never buzzes.
+      if (t > 0.6 && now - state.lastTickTime > 55) {
         state.lastTickTime = now;
         if (state.onTick) {
           try {

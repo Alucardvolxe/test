@@ -88,7 +88,9 @@
       lastWinner: document.getElementById("lastWinner"),
       lastWinnerName: document.getElementById("lastWinnerName"),
 
+      soundQuickBtn: document.getElementById("soundQuickBtn"),
       schemeSelect: document.getElementById("schemeSelect"),
+      schemePreview: document.getElementById("schemePreview"),
       bgColor: document.getElementById("bgColor"),
       bgColorValue: document.getElementById("bgColorValue"),
       durationRange: document.getElementById("durationRange"),
@@ -135,6 +137,17 @@
       els.schemeSelect.addEventListener("change", function (event) {
         settings.scheme = event.target.value;
         wheel.setSettings(settings);
+        updateSchemePreview();
+        scheduleSave();
+      });
+    }
+
+    if (els.soundQuickBtn) {
+      els.soundQuickBtn.addEventListener("click", function () {
+        settings.sound = !settings.sound;
+        if (settings.sound) ensureAudio();
+        if (els.soundToggle) els.soundToggle.checked = settings.sound;
+        updateSoundQuickButton();
         scheduleSave();
       });
     }
@@ -163,10 +176,8 @@
     if (els.soundToggle) {
       els.soundToggle.addEventListener("change", function (event) {
         settings.sound = event.target.checked;
-        if (settings.sound) {
-          ensureAudio();
-          playTick();
-        }
+        if (settings.sound) ensureAudio();
+        updateSoundQuickButton();
         scheduleSave();
       });
     }
@@ -201,6 +212,27 @@
     if (els.soundToggle) els.soundToggle.checked = settings.sound;
     if (els.confettiToggle) els.confettiToggle.checked = settings.confetti;
     if (els.autoRemoveToggle) els.autoRemoveToggle.checked = settings.autoRemove;
+    updateSoundQuickButton();
+    updateSchemePreview();
+  }
+
+  function updateSoundQuickButton() {
+    if (!els.soundQuickBtn) return;
+    const on = Boolean(settings.sound);
+    els.soundQuickBtn.setAttribute("aria-pressed", on ? "true" : "false");
+    els.soundQuickBtn.title = on ? "Mute sound effects" : "Enable sound effects";
+  }
+
+  function updateSchemePreview() {
+    if (!els.schemePreview) return;
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < 8; i += 1) {
+      const dot = document.createElement("span");
+      dot.className = "scheme-dot";
+      dot.style.background = wheel.getColor(i);
+      fragment.appendChild(dot);
+    }
+    els.schemePreview.replaceChildren(fragment);
   }
 
   function updateRangeVisual() {
@@ -239,11 +271,14 @@
     );
     if (!ok) return;
 
+    if (modalOpen) closeWinner({ restoreFocus: false });
+
     const defaults = storage.reset();
     settings = defaults.settings;
     state.settings = defaults.settings;
     spinCount = 0;
 
+    stopConfetti();
     names.replaceAll(defaults.names);
     history.setAll(defaults.history);
     wheel.setSettings(settings);
@@ -638,13 +673,13 @@
       const osc = ac.createOscillator();
       const gain = ac.createGain();
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(760 + Math.random() * 220, now);
+      osc.frequency.setValueAtTime(1080, now);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.045, now + 0.005);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+      gain.gain.exponentialRampToValueAtTime(0.02, now + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
       osc.connect(gain).connect(ac.destination);
       osc.start(now);
-      osc.stop(now + 0.07);
+      osc.stop(now + 0.06);
     } catch (err) {
       /* ignore audio failures */
     }
@@ -661,10 +696,10 @@
         const start = now + i * 0.085;
         const osc = ac.createOscillator();
         const gain = ac.createGain();
-        osc.type = "triangle";
+        osc.type = "sine";
         osc.frequency.setValueAtTime(freq, start);
         gain.gain.setValueAtTime(0.0001, start);
-        gain.gain.exponentialRampToValueAtTime(0.11, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.075, start + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.55);
         osc.connect(gain).connect(ac.destination);
         osc.start(start);
@@ -682,6 +717,17 @@
   let confettiCtx = null;
   let confettiW = 0;
   let confettiH = 0;
+
+  function stopConfetti() {
+    if (confettiRaf) {
+      cancelAnimationFrame(confettiRaf);
+      confettiRaf = 0;
+    }
+    if (confettiCtx && confettiW && confettiH) {
+      confettiCtx.clearRect(0, 0, confettiW, confettiH);
+    }
+    confettiParticles = [];
+  }
 
   function launchConfetti() {
     if (reducedMotionQuery.matches || !settings.confetti) return;
